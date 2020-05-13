@@ -63,7 +63,7 @@ USoundWave *USoundProcessingLibrary::LoadOggFile(const FString &path) {
 USoundWave *USoundProcessingLibrary::LoadData(const TArray<uint8> &fileContents) {
 
   // Sanity check for the input data array -- if it's empty, it can't be valid
-  SizeType fileLength = fileContents.Num();
+  SIZE_T fileLength = fileContents.Num();
   if(fileLength == 0) {
     UE_LOG(
       LogOggAsset, Error,
@@ -105,7 +105,7 @@ USoundWave *USoundProcessingLibrary::LoadData(const TArray<uint8> &fileContents)
   bulkData->Lock(LOCK_READ_WRITE);
 
   // Copy compressed RawFile Data to the Address of the OGG Data of the SW File
-  FMemory::Memmove(bulkData->Realloc(rawFile.Num()), rawFile.GetData(), rawFile.Num());
+  FMemory::Memmove(bulkData->Realloc(fileLength), fileContents.GetData(), fileLength);
 
   // Unlock the BulkData again
   bulkData->Unlock();
@@ -191,8 +191,6 @@ bool USoundProcessingLibrary::FillSoundWaveInfo(
 }
 
 // --------------------------------------------------------------------------------------------- //
-
-/// Function to decompress the compressed Data that comes with the .ogg file
 
 void USoundProcessingLibrary::GetPCMDataFromFile(USoundWave *inSoundWave) {
   if(inSoundWave == nullptr)	{
