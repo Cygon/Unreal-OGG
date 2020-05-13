@@ -23,26 +23,33 @@ THE SOFTWARE.
 */
 #pragma endregion // MIT License
 
-#include "OggAssetPrivatePCH.h"
-#include "ModuleInterface.h"
+#include <Modules/ModuleManager.h>
+#include <Modules/ModuleInterface.h>
 
-/**
- * Implements the OggAsset module.
- */
-class FOggAssetModule
-	: public IModuleInterface
-{
-public:
+// --------------------------------------------------------------------------------------------- //
 
-	// IModuleInterface interface
+/// Manages global data of the OggAsset module when loaded into Unreal Engine
+class FOggAssetModule : public IModuleInterface {
 
-	virtual void StartupModule() override { }
-	virtual void ShutdownModule() override { }
+  //
+  // IModuleInterface implementation
+  //
 
-	virtual bool SupportsDynamicReloading() override
-	{
-		return true;
-	}
+  /// Called when the module is loaded into Unreal Engine
+  public: virtual void StartupModule() override { }
+
+  /// Called before the module is unloaded by Unreal Engine
+  public: virtual void ShutdownModule() override { }
+
+  /// Reports the the module can be unloaded and reloaded without quitting the engine
+  public: virtual bool SupportsDynamicReloading() override {
+    return true;
+  }
+
 };
 
+// --------------------------------------------------------------------------------------------- //
+
 IMPLEMENT_MODULE(FOggAssetModule, OggAsset);
+
+// --------------------------------------------------------------------------------------------- //
