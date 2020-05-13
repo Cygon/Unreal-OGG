@@ -24,7 +24,7 @@ THE SOFTWARE.
 #pragma endregion // MIT License
 #pragma once
 
-#include "Sound/SoundWave.h"
+#include <Sound/SoundWave.h>
 
 #include "OggAsset.generated.h"
 

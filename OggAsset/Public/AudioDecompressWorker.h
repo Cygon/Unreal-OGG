@@ -24,7 +24,7 @@ THE SOFTWARE.
 #pragma endregion // MIT License
 #pragma once
 
-#include "AudioDecompress.h"
+#include <AudioDecompress.h>
 
 class FAudioDecompressWorker : public FRunnable
 {

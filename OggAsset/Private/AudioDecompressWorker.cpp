@@ -26,8 +26,8 @@ THE SOFTWARE.
 #include "OggAssetPrivatePCH.h"
 #include "AudioDecompressWorker.h"
 
-#include "AudioDevice.h"
-#include "Developer/TargetPlatform/Public/Interfaces/IAudioFormat.h"
+#include <AudioDevice.h>
+#include <Developer/TargetPlatform/Public/Interfaces/IAudioFormat.h>
 
 FAudioDecompressWorker* FAudioDecompressWorker::Runnable = NULL;
 int32 FAudioDecompressWorker::ThreadCounter = 0;

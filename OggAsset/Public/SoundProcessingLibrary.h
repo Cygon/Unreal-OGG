@@ -24,10 +24,10 @@ THE SOFTWARE.
 #pragma endregion // MIT License
 #pragma once
 
-#include "AudioDecompress.h"
+#include <AudioDecompress.h>
 
 // Workers, to have an Async Decompress worker
-#include "Runtime/Core/Public/Async/AsyncWork.h"
+#include <Runtime/Core/Public/Async/AsyncWork.h>
 
 #include "AudioDecompressWorker.h"
 

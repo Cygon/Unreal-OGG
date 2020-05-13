@@ -28,10 +28,10 @@ THE SOFTWARE.
 
 #include "OggAsset.h"
 
-#include "Sound/SoundWave.h"
-#include "AudioDevice.h"
-#include "Runtime/Engine/Public/VorbisAudioInfo.h"
-#include "Developer/TargetPlatform/Public/Interfaces/IAudioFormat.h"
+#include <Sound/SoundWave.h>
+#include <AudioDevice.h>
+#include <Runtime/Engine/Public/VorbisAudioInfo.h>
+#include <Developer/TargetPlatform/Public/Interfaces/IAudioFormat.h>
 
 /// Functions to load Data from the HardDrive
 
