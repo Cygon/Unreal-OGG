@@ -23,7 +23,7 @@ THE SOFTWARE.
 */
 #pragma endregion // MIT License
 
-#include "OggAssetPrivatePCH.h"
+#include "OggAssetErrors.h"
 #include "AudioDecompressWorker.h"
 
 #include <AudioDevice.h>
