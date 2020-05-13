@@ -60,10 +60,11 @@ USoundWave *USoundProcessingLibrary::LoadOggFile(const FString &path) {
 
 // --------------------------------------------------------------------------------------------- //
 
-USoundWave *USoundProcessingLibrary::LoadData(const TArray<uint8> &rawFile) {
+USoundWave *USoundProcessingLibrary::LoadData(const TArray<uint8> &fileContents) {
 
   // Sanity check for the input data array -- if it's empty, it can't be valid
-  if(rawFile.Num() == 0) {
+  SizeType fileLength = fileContents.Num();
+  if(fileLength == 0) {
     UE_LOG(
       LogOggAsset, Error,
       TEXT("%s - %s"),
@@ -73,7 +74,7 @@ USoundWave *USoundProcessingLibrary::LoadData(const TArray<uint8> &rawFile) {
     return nullptr;
   }
 
-  // Try to create a new USoundWave into which the 
+  // Try to create a new USoundWave in which the decoded audio data can be stored
   USoundWave *compressedSoundWave = NewObject<USoundWave>(USoundWave::StaticClass());
   if(compressedSoundWave == nullptr) {
     UE_LOG(
@@ -85,8 +86,9 @@ USoundWave *USoundProcessingLibrary::LoadData(const TArray<uint8> &rawFile) {
     return nullptr;
   }
 
-  // Fill the vorbis stream into the SoundWave Object
-  if(!FillSoundWaveInfo(compressedSoundWave, rawFile)) {
+  // Decode the vorbis audio data into our USoundWave
+  bool wasDecodedSuccessfully = FillSoundWaveInfo(compressedSoundWave, fileContents);
+  if(!wasDecodedSuccessfully) {
     UE_LOG(
       LogOggAsset, Error,
       TEXT("%s - %s"),
