@@ -23,71 +23,84 @@ THE SOFTWARE.
 */
 #pragma endregion // MIT License
 
-#include "OggAssetErrors.h"
 #include "AudioDecompressWorker.h"
 
 #include <AudioDevice.h>
 #include <Developer/TargetPlatform/Public/Interfaces/IAudioFormat.h>
 
-FAudioDecompressWorker* FAudioDecompressWorker::Runnable = NULL;
+// --------------------------------------------------------------------------------------------- //
+
+FAudioDecompressWorker* FAudioDecompressWorker::Runnable = nullptr;
+
 int32 FAudioDecompressWorker::ThreadCounter = 0;
 
-FAudioDecompressWorker::FAudioDecompressWorker(class USoundWave* InSoundWaveRef)
-	: SoundWaveRef(InSoundWaveRef)
-	, AudioInfo(NULL)
-	, Thread(NULL)
-{
-	if (GEngine && GEngine->GetMainAudioDevice())
-	{
+// --------------------------------------------------------------------------------------------- //
+
+FAudioDecompressWorker::FAudioDecompressWorker(class USoundWave *InSoundWaveRef) :
+  Thread(NULL),
+	SoundWaveRef(InSoundWaveRef),
+	AudioInfo(NULL) {
+
+	if(GEngine && GEngine->GetMainAudioDevice()) {
 		AudioInfo = GEngine->GetMainAudioDevice()->CreateCompressedAudioInfo(SoundWaveRef);
 	}
 
 	// Higher overall ThreadCounter to avoid duplicated names
 	FAudioDecompressWorker::ThreadCounter++;
 
-	Thread = FRunnableThread::Create(this, *FString::Printf(TEXT("FAudioDecompressWorker%d"), FAudioDecompressWorker::ThreadCounter), 0, EThreadPriority::TPri_Normal);
+	Thread = FRunnableThread::Create(
+		this,
+		*FString::Printf(TEXT("FAudioDecompressWorker%d"),
+		FAudioDecompressWorker::ThreadCounter),
+		0,
+		EThreadPriority::TPri_Normal
+	);
 }
 
-FAudioDecompressWorker::~FAudioDecompressWorker()
-{
+// --------------------------------------------------------------------------------------------- //
+
+FAudioDecompressWorker::~FAudioDecompressWorker() {
 	delete Thread;
 	Thread = NULL;
 }
 
-FAudioDecompressWorker* FAudioDecompressWorker::InitializeWorker(class USoundWave* InSoundWaveRef)
-{
+// --------------------------------------------------------------------------------------------- //
+
+FAudioDecompressWorker *FAudioDecompressWorker::InitializeWorker(
+	class USoundWave* InSoundWaveRef
+) {
 	Runnable = new FAudioDecompressWorker(InSoundWaveRef);
 
 	return Runnable;
 }
 
-void FAudioDecompressWorker::ShutdownWorker()
-{
-	if (Runnable)
-	{
+// --------------------------------------------------------------------------------------------- //
+
+void FAudioDecompressWorker::ShutdownWorker() {
+	if(Runnable) {
 		Runnable->EnsureCompletion();
 		delete Runnable;
 		Runnable = NULL;
 	}
 }
 
-bool FAudioDecompressWorker::Init()
-{
+// --------------------------------------------------------------------------------------------- //
+
+bool FAudioDecompressWorker::Init() {
 	// Make sure the Worker is marked is not finished
 	bIsFinished = false;
 
 	return true;
 }
 
-uint32 FAudioDecompressWorker::Run()
-{
-	if (!SoundWaveRef)
-	{
+// --------------------------------------------------------------------------------------------- //
+
+uint32 FAudioDecompressWorker::Run() {
+	if (!SoundWaveRef) {
 		return 0;
 	}
 
-	if (AudioInfo != NULL)
-	{
+	if (AudioInfo != nullptr) {
 		FSoundQualityInfo QualityInfo = { 0 };
 
 		// Parse the audio header for the relevant information
@@ -101,7 +114,7 @@ uint32 FAudioDecompressWorker::Run()
 			FScopeCycleCounterUObject WaveObject(SoundWaveRef);
 
 			// Extract the data
-			SoundWaveRef->SampleRate = QualityInfo.SampleRate;
+			SoundWaveRef->SetSampleRate(QualityInfo.SampleRate);
 			SoundWaveRef->NumChannels = QualityInfo.NumChannels;
 
 			if (QualityInfo.Duration > 0.0f)
@@ -109,7 +122,10 @@ uint32 FAudioDecompressWorker::Run()
 				SoundWaveRef->Duration = QualityInfo.Duration;
 			}
 
-			const uint32 PCMBufferSize = SoundWaveRef->Duration * SoundWaveRef->SampleRate * SoundWaveRef->NumChannels;
+			// TODO: Read SampleRate property via Blueprint reflection
+			int32 sampleRate = static_cast<int32>(SoundWaveRef->GetSampleRateForCurrentPlatform());
+
+			const uint32 PCMBufferSize = SoundWaveRef->Duration * sampleRate * SoundWaveRef->NumChannels;
 
 			SoundWaveRef->CachedRealtimeFirstBuffer = new uint8[PCMBufferSize * 2];
 
@@ -127,19 +143,22 @@ uint32 FAudioDecompressWorker::Run()
 	return 0;
 }
 
-void FAudioDecompressWorker::Stop()
-{
+// --------------------------------------------------------------------------------------------- //
+
+void FAudioDecompressWorker::Stop() {
 	StopTaskCounter.Increment();
 }
 
-void FAudioDecompressWorker::Exit()
-{
+// --------------------------------------------------------------------------------------------- //
+
+void FAudioDecompressWorker::Exit() {
 	// Make sure to mark Thread as finished
 	bIsFinished = true;
 }
 
-void FAudioDecompressWorker::EnsureCompletion()
-{
+// --------------------------------------------------------------------------------------------- //
+
+void FAudioDecompressWorker::EnsureCompletion() {
 	Stop();
 
 	if (Thread != NULL) {
@@ -147,3 +166,5 @@ void FAudioDecompressWorker::EnsureCompletion()
 		Thread->WaitForCompletion();
 	}		
 }
+
+// --------------------------------------------------------------------------------------------- //

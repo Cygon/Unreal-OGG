@@ -23,9 +23,8 @@ THE SOFTWARE.
 */
 #pragma endregion // MIT License
 
-#include "OggAssetErrors.h"
 #include "SoundProcessingLibrary.h"
-
+#include "OggAssetErrors.h"
 #include "OggAsset.h"
 
 #include <Sound/SoundWave.h>
@@ -33,11 +32,11 @@ THE SOFTWARE.
 #include <Runtime/Engine/Public/VorbisAudioInfo.h>
 #include <Developer/TargetPlatform/Public/Interfaces/IAudioFormat.h>
 
-/// Functions to load Data from the HardDrive
+// --------------------------------------------------------------------------------------------- //
 
-USoundWave* USoundProcessingLibrary::LoadOggFile(const FString& InFilePath)
-{
-    // TArray that holds the binary and encoded Sound data
+/// Functions to load Data from the HardDrive
+USoundWave *USoundProcessingLibrary::LoadOggFile(const FString &InFilePath) {
+  // TArray that holds the binary and encoded Sound data
   TArray<uint8> RawFile;
 
   // Load file into RawFile Array
@@ -49,13 +48,24 @@ USoundWave* USoundProcessingLibrary::LoadOggFile(const FString& InFilePath)
   return USoundProcessingLibrary::LoadData(RawFile);
 }
 
-USoundWave* USoundProcessingLibrary::LoadData(const TArray<uint8>& RawFile)
-{
-  // Create new SoundWave Object
-  USoundWave* CompressedSoundWaveRef = NewObject<USoundWave>(USoundWave::StaticClass());
+// --------------------------------------------------------------------------------------------- //
 
-  // Make sure the SoundWave Object is Valid
-  if (!CompressedSoundWaveRef) {
+USoundWave *USoundProcessingLibrary::LoadData(const TArray<uint8> &rawFile) {
+
+  // Sanity check for the input data array -- if it's empty, it can't be valid
+  if(rawFile.Num() == 0) {
+    UE_LOG(
+      LogOggAsset, Error,
+      TEXT("%s - %s"),
+      TEXT("USoundProcessingLibrary::LoadData()"),
+      TEXT("Raw file input array is empty. Sound not loaded/assigned?")
+    );
+    return nullptr;
+  }
+
+  // Try to create a new USoundWave into which the 
+  USoundWave *compressedSoundWave = NewObject<USoundWave>(USoundWave::StaticClass());
+  if(compressedSoundWave == nullptr) {
     UE_LOG(
       LogOggAsset, Error,
       TEXT("%s - %s"),
@@ -65,48 +75,40 @@ USoundWave* USoundProcessingLibrary::LoadData(const TArray<uint8>& RawFile)
     return nullptr;
   }
 
-  // Fill the SoundData into the SoundWave Object
-  if (RawFile.Num() > 0) {
-
-    if (!FillSoundWaveInfo(CompressedSoundWaveRef, (TArray<uint8>*)&RawFile)) {
+  // Fill the vorbis stream into the SoundWave Object
+  if(!FillSoundWaveInfo(compressedSoundWave, rawFile)) {
     UE_LOG(
       LogOggAsset, Error,
       TEXT("%s - %s"),
       TEXT("USoundProcessingLibrary::LoadData()"),
       TEXT("Could not read compressed vorbis audio stream. Asset corrupted?")
     );
-      return nullptr;
-    }
-  }	else {
-    UE_LOG(
-      LogOggAsset, Error,
-      TEXT("%s - %s"),
-      TEXT("USoundProcessingLibrary::LoadData()"),
-      TEXT("Raw file input array is empty. Sound not loaded/assigned?")
-    );
     return nullptr;
   }
     
-
   // Get Pointer to the Compressed OGG Data
-  FByteBulkData* BulkData = &CompressedSoundWaveRef->CompressedFormatData.GetFormat(FName("OGG"));
+  FByteBulkData *bulkData = &compressedSoundWave->CompressedFormatData.GetFormat(FName("OGG"));
 
   // Set the Lock of the BulkData to ReadWrite
-  BulkData->Lock(LOCK_READ_WRITE);
+  bulkData->Lock(LOCK_READ_WRITE);
 
   // Copy compressed RawFile Data to the Address of the OGG Data of the SW File
-  FMemory::Memmove(BulkData->Realloc(RawFile.Num()), RawFile.GetData(), RawFile.Num());
+  FMemory::Memmove(bulkData->Realloc(rawFile.Num()), rawFile.GetData(), rawFile.Num());
 
   // Unlock the BulkData again
-  BulkData->Unlock();
+  bulkData->Unlock();
 
-  return CompressedSoundWaveRef;
+  return compressedSoundWave;
 }
 
-void USoundProcessingLibrary::LoadSoundWave(USoundWave* CompressedSoundWaveRef, const TArray<uint8>& RawFile)
-{
+// --------------------------------------------------------------------------------------------- //
+
+void USoundProcessingLibrary::LoadSoundWave(
+  USoundWave *compressedSoundWave, const TArray<uint8> &rawFile
+) {
+
   // Make sure the SoundWave Object is Valid
-  if (!CompressedSoundWaveRef) {
+  if(compressedSoundWave == nullptr) {
     UE_LOG(
       LogOggAsset, Error,
       TEXT("%s - %s"),
@@ -117,17 +119,7 @@ void USoundProcessingLibrary::LoadSoundWave(USoundWave* CompressedSoundWaveRef, 
   }
 
   // Fill the SoundData into the SoundWave Object
-  if (RawFile.Num() > 0) {
-    if (!FillSoundWaveInfo(CompressedSoundWaveRef, (TArray<uint8>*)&RawFile)) {
-      UE_LOG(
-        LogOggAsset, Error,
-        TEXT("%s - %s"),
-        TEXT("USoundProcessingLibrary::LoadSoundWave()"),
-        TEXT("Could not read compressed vorbis audio stream. Asset corrupted?")
-      );
-      return;
-    }
-  }	else {
+  if(rawFile.Num() == 0) {
     UE_LOG(
       LogOggAsset, Error,
       TEXT("%s - %s"),
@@ -137,48 +129,61 @@ void USoundProcessingLibrary::LoadSoundWave(USoundWave* CompressedSoundWaveRef, 
     return;
   }
 
+  if(!FillSoundWaveInfo(compressedSoundWave, rawFile)) {
+    UE_LOG(
+      LogOggAsset, Error,
+      TEXT("%s - %s"),
+      TEXT("USoundProcessingLibrary::LoadSoundWave()"),
+      TEXT("Could not read compressed vorbis audio stream. Asset corrupted?")
+    );
+    return;
+  }
+
   // Get Pointer to the Compressed OGG Data
-  FByteBulkData* BulkData = &CompressedSoundWaveRef->CompressedFormatData.GetFormat(FName("OGG"));
+  FByteBulkData *bulkData = &compressedSoundWave->CompressedFormatData.GetFormat(FName("OGG"));
 
   // Set the Lock of the BulkData to ReadWrite
-  BulkData->Lock(LOCK_READ_WRITE);
+  bulkData->Lock(LOCK_READ_WRITE);
 
   // Copy compressed RawFile Data to the Address of the OGG Data of the SW File
-  FMemory::Memmove(BulkData->Realloc(RawFile.Num()), RawFile.GetData(), RawFile.Num());
+  FMemory::Memmove(bulkData->Realloc(rawFile.Num()), rawFile.GetData(), rawFile.Num());
 
   // Unlock the BulkData again
-  BulkData->Unlock();
+  bulkData->Unlock();
 }
 
+// --------------------------------------------------------------------------------------------- //
 
-bool USoundProcessingLibrary::FillSoundWaveInfo(USoundWave* InSoundWave, TArray<uint8>* InRawFile)
-{
+bool USoundProcessingLibrary::FillSoundWaveInfo(
+  USoundWave *inSoundWave, const TArray<uint8> &inRawFile
+) {
+
   // Info Structs
-  FSoundQualityInfo SoundQualityInfo;
-  FVorbisAudioInfo VorbisAudioInfo;
+  FSoundQualityInfo soundQualityInfo;
+  FVorbisAudioInfo vorbisAudioInfo;
 
   // Save the Info into SoundQualityInfo
-  if (!VorbisAudioInfo.ReadCompressedInfo(InRawFile->GetData(), InRawFile->Num(), &SoundQualityInfo))
-  {
+  if(!vorbisAudioInfo.ReadCompressedInfo(inRawFile.GetData(), inRawFile.Num(), &soundQualityInfo)) {
     return false;
   }
 
   // Fill in all the Data we have
-  InSoundWave->DecompressionType = EDecompressionType::DTYPE_RealTime;
-  InSoundWave->SoundGroup = ESoundGroup::SOUNDGROUP_Default;
-  InSoundWave->NumChannels = SoundQualityInfo.NumChannels;
-  InSoundWave->Duration = SoundQualityInfo.Duration;
-  InSoundWave->RawPCMDataSize = SoundQualityInfo.SampleDataSize;
-  InSoundWave->SampleRate = SoundQualityInfo.SampleRate;
+  inSoundWave->DecompressionType = EDecompressionType::DTYPE_RealTime;
+  inSoundWave->SoundGroup = ESoundGroup::SOUNDGROUP_Default;
+  inSoundWave->NumChannels = soundQualityInfo.NumChannels;
+  inSoundWave->Duration = soundQualityInfo.Duration;
+  inSoundWave->RawPCMDataSize = soundQualityInfo.SampleDataSize;
+  inSoundWave->SetSampleRate(soundQualityInfo.SampleRate);
 
   return true;
 }
 
+// --------------------------------------------------------------------------------------------- //
+
 /// Function to decompress the compressed Data that comes with the .ogg file
 
-void USoundProcessingLibrary::GetPCMDataFromFile(USoundWave* InSoundWave)
-{
-  if (InSoundWave == nullptr)	{
+void USoundProcessingLibrary::GetPCMDataFromFile(USoundWave *inSoundWave) {
+  if(inSoundWave == nullptr)	{
     UE_LOG(
       LogOggAsset, Error,
       TEXT("%s - %s"),
@@ -188,7 +193,11 @@ void USoundProcessingLibrary::GetPCMDataFromFile(USoundWave* InSoundWave)
     return;
   }
 
-  if (InSoundWave->NumChannels < 1 || InSoundWave->NumChannels > 2) {
+  // We only support playback or mono or stereo streams
+  bool isMonoOrStereo = (
+    (inSoundWave->NumChannels == 1) || (inSoundWave->NumChannels == 2)
+  );
+  if(!isMonoOrStereo) {
     UE_LOG(
       LogOggAsset, Error,
       TEXT("%s - %s"),
@@ -198,21 +207,19 @@ void USoundProcessingLibrary::GetPCMDataFromFile(USoundWave* InSoundWave)
     return;
   }
 
-  if (GEngine)
-  {
+  if(GEngine) {
     // Get a Pointer to the Main Audio Device
     FAudioDevice* AudioDevice = GEngine->GetMainAudioDevice();
 
     if (AudioDevice) {
 
-      InSoundWave->InitAudioResource(AudioDevice->GetRuntimeFormat(InSoundWave));
+      inSoundWave->InitAudioResource(AudioDevice->GetRuntimeFormat(inSoundWave));
 
       //PrintLog(TEXT("Creating new DecompressWorker."));
 
       // Creates a new DecompressWorker and starts it
-      InitNewDecompressTask(InSoundWave);
-    }
-    else {
+      InitNewDecompressTask(inSoundWave);
+    } else {
       UE_LOG(
         LogOggAsset, Error,
         TEXT("%s - %s"),
@@ -224,19 +231,20 @@ void USoundProcessingLibrary::GetPCMDataFromFile(USoundWave* InSoundWave)
   }
 }
 
-void USoundProcessingLibrary::InitNewDecompressTask(USoundWave* InSoundWaveRef)
-{
+// --------------------------------------------------------------------------------------------- //
+
+void USoundProcessingLibrary::InitNewDecompressTask(USoundWave *InSoundWaveRef) {
   // Do we already have a valid Runnable? If not, create a new one
-  if (FAudioDecompressWorker::Runnable == NULL)	{
+  if(FAudioDecompressWorker::Runnable == NULL) {
     // Init new Worker and pass the SoundWaveRef to decompress it
     FAudioDecompressWorker::InitializeWorker(InSoundWaveRef);
-  }	else if(FAudioDecompressWorker::Runnable->IsFinished()) {
+  } else if(FAudioDecompressWorker::Runnable->IsFinished()) {
     // The Worker is finished and still valid, shut it down!
     FAudioDecompressWorker::ShutdownWorker();
 
     // Init new Worker and pass the SoundWaveRef to decompress it
     FAudioDecompressWorker::InitializeWorker(InSoundWaveRef);
-  }	else {
+  } else {
     UE_LOG(
       LogOggAsset, Display,
       TEXT("%s - %s"),
@@ -245,3 +253,5 @@ void USoundProcessingLibrary::InitNewDecompressTask(USoundWave* InSoundWaveRef)
     );
   }
 }
+
+// --------------------------------------------------------------------------------------------- //

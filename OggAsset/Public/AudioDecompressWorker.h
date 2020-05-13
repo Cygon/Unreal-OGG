@@ -26,8 +26,10 @@ THE SOFTWARE.
 
 #include <AudioDecompress.h>
 
-class FAudioDecompressWorker : public FRunnable
-{
+// --------------------------------------------------------------------------------------------- //
+
+class FAudioDecompressWorker : public FRunnable {
+
 	/// VARIABLES ///
 
 public:
@@ -91,3 +93,5 @@ public:
 		return bIsFinished;
 	}
 };
+
+// --------------------------------------------------------------------------------------------- //
