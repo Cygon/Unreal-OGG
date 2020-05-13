@@ -44,10 +44,10 @@ class OGGASSET_API USoundProcessingLibrary : public UBlueprintFunctionLibrary {
 	//
 
 	/// Loads a vanilla .ogg vorbis audio stream from a file on disk
-	/// @param  inFilePath  Directory and filename of the file that will be loaded
+	/// @param  path  Directory and filename of the file that will be loaded
 	/// @returns The SoundWave instance for the loaded audio stream
 	public: UFUNCTION(BlueprintCallable, Category = "Ogg")
-	static USoundWave *LoadOggFile(const FString &inFilePath);
+	static USoundWave *LoadOggFile(const FString &path);
 
 	//
 	// Internal implementation
@@ -59,20 +59,20 @@ class OGGASSET_API USoundProcessingLibrary : public UBlueprintFunctionLibrary {
 	public: static USoundWave *LoadData(const TArray<uint8> &rawFile);
 
 
-
-	static void LoadSoundWave(USoundWave *compressedSoundWave, const TArray<uint8> &rawFile);
+  protected: static void LoadSoundWave(
+		USoundWave *compressedSoundWave, const TArray<uint8> &rawFile
+	);
 
 	// Function to fill in the RawFile sound data into the USoundWave object
-	static bool FillSoundWaveInfo(class USoundWave *inSoundWave, const TArray<uint8> &inRawFile);
+	protected: static bool FillSoundWaveInfo(
+		class USoundWave *inSoundWave, const TArray<uint8> &inRawFile
+	);
 
-	/// Function to decompress the compressed Data that comes with the .ogg file
-
-	static void GetPCMDataFromFile(class USoundWave *inSoundWave);
-
-	/// Helper Functions
+  /// Decompresses the ogg file in memory into an Unreal Engine USoundWave
+	protected: static void GetPCMDataFromFile(class USoundWave *inSoundWave);
 
 	// Function to Start a new DecompressTask
-	static void InitNewDecompressTask(USoundWave *inSoundWave);
+	protected: static void InitNewDecompressTask(USoundWave *inSoundWave);
 
 };
 

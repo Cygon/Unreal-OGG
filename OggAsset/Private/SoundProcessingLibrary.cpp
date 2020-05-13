@@ -34,18 +34,28 @@ THE SOFTWARE.
 
 // --------------------------------------------------------------------------------------------- //
 
-/// Functions to load Data from the HardDrive
-USoundWave *USoundProcessingLibrary::LoadOggFile(const FString &InFilePath) {
-  // TArray that holds the binary and encoded Sound data
-  TArray<uint8> RawFile;
+USoundWave *USoundProcessingLibrary::LoadOggFile(const FString &path) {
 
-  // Load file into RawFile Array
-  bool bLoaded = FFileHelper::LoadFileToArray(RawFile, InFilePath.GetCharArray().GetData());
+  // Try to load the whole file into memory. If it can't be accessed or doesn't exist,
+  // complain and return NULL (since Unreal Engine has no proper error handling)
+  TArray<uint8> fileContents;
+  {
+    bool wasLoaded = FFileHelper::LoadFileToArray(fileContents, *path);
+    if(!wasLoaded) {
+      UE_LOG(
+        LogOggAsset, Error,
+        TEXT("%s - %s %s"),
+        TEXT("USoundProcessingLibrary::LoadOggFile()"),
+        TEXT("Could not load file at "),
+        *path
+      );
+      return nullptr;
+    }
+  }
 
-  if (!bLoaded)
-    return nullptr;
+  // We were able to load the file, now try to decode it as Ogg Vorbis container
+  return USoundProcessingLibrary::LoadData(fileContents);
 
-  return USoundProcessingLibrary::LoadData(RawFile);
 }
 
 // --------------------------------------------------------------------------------------------- //
