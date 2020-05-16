@@ -1,14 +1,12 @@
 using UnrealBuildTool;
 
-public class OggAsset : ModuleRules {
+public class SoundVorbis : ModuleRules {
 
-  public OggAsset(ReadOnlyTargetRules Target) : base(Target) {
+  public SoundVorbis(ReadOnlyTargetRules Target) : base(Target) {
     PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
     PublicDependencyModuleNames.AddRange(
-      new string[] {
-        "Core", "CoreUObject", "Engine"
-      }
+      new string[] { "Core", "CoreUObject", "Engine" }
     );
 
     PublicDefinitions.Add("WITH_OGGVORBIS");
@@ -19,7 +17,8 @@ public class OggAsset : ModuleRules {
     // Uncomment if you are using online features
     // PrivateDependencyModuleNames.Add("OnlineSubsystem");
 
-    // To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
+    // To include OnlineSubsystemSteam, add it to the plugins section in your uproject file
+    // with the Enabled attribute set to true
   }
 
 }
