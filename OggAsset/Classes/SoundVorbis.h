@@ -2,6 +2,7 @@
 /*
 OggAsset Library
 Copyright (C) 2017-2018 Scott Bishel
+With enhancements copyright (C) 2020 Markus Ewald
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +34,9 @@ THE SOFTWARE.
 // --------------------------------------------------------------------------------------------- //
 
 /// Streamable audio data encoded with the Vorbis codec for on-the-fly decoding
+/// @remarks
+///   This is the asset type that is produced by the imported and which gets stored in
+///   your final, cooked build.
 UCLASS(BlueprintType, HideCategories=(Object))
 class OGGASSET_API USoundVorbis : public USoundBase {
 
@@ -49,13 +53,6 @@ class OGGASSET_API USoundVorbis : public USoundBase {
   /// Whether the sound will be played in a loop if played directly
   public:	UPROPERTY(EditAnywhere, Category=SoundVorbis)
   uint32 bLooping:1;
-
-  //
-  // UObject implementation
-  //
-
-  /// Loads or saves the vorbis-encoded sound using the specified archive
-  public: virtual void Serialize(FArchive &archive) override;
 
   //
   // USoundBase implementation
@@ -80,6 +77,14 @@ class OGGASSET_API USoundVorbis : public USoundBase {
     const FSoundParseParameters &parseParams,
     TArray<FWaveInstance *> &waveInstances
   ) override;
+
+  //
+  // UObject implementation
+  //
+
+  /// Loads or saves the vorbis-encoded sound using the specified archive
+  /// @param  archive  Container holding or receiving the saved values
+  public: virtual void Serialize(FArchive &archive) override;
 
   //
   // Internal implementation

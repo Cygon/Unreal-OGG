@@ -2,7 +2,7 @@
 /*
 OggAsset Library
 Copyright (C) 2017-2018 Scott Bishel
-Extended in 2020 by Markus Ewald
+With enhancements copyright (C) 2020 Markus Ewald
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ THE SOFTWARE.
 
 // --------------------------------------------------------------------------------------------- //
 
-/// Playable sound for generated audio clips that a fed from a vorbis sound asset
+/// Playable sound for generated audio clips that are fed from a vorbis sound asset
 UCLASS()
 class USoundVorbisWave : public USoundWaveProcedural {
 
@@ -42,6 +42,7 @@ class USoundVorbisWave : public USoundWaveProcedural {
   // USoundVorbisWave implementation
   //
 
+  /// Vorbis asset holding the vorbis-encoded audio data
   public: UPROPERTY()
   class USoundVorbis *SoundVorbis;
 
@@ -49,7 +50,11 @@ class USoundVorbisWave : public USoundWaveProcedural {
   // Internal implementation
   //
 
-  public: virtual int32 GeneratePCMData(uint8 *pcmData, const int32 samplesNeeded) override;
+  /// Decodes the vorbis-encoded audio stream into playable PCM data
+  /// @param  pcmData        Address at which the decoded PCM data will be stored
+  /// @param  samplesNeeded  Number of samples that should be decoded
+  /// @returns The number of bytes placed in the PCM data buffer
+  protected: virtual int32 GeneratePCMData(uint8 *pcmData, const int32 samplesNeeded) override;
 
 };
 
