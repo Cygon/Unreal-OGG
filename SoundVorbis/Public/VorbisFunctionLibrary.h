@@ -2,6 +2,7 @@
 /*
 OggAsset Library
 Copyright (C) 2017-2018 Scott Bishel
+Enhancements copyright (C) 2020 Markus Ewald
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,20 +28,21 @@ THE SOFTWARE.
 #include <AudioDecompress.h>
 #include <Runtime/Core/Public/Async/AsyncWork.h>
 
-#include "AudioDecompressWorker.h"
-#include "OggAsset.h"
-#include "SoundProcessingLibrary.generated.h"
+//#include "AudioDecompressWorker.h"
+//#include "OggAsset.h"
+
+#include "VorbisFunctionLibrary.generated.h"
 
 // --------------------------------------------------------------------------------------------- //
 
 /// Provides functions for loading ogg audio streams in Blueprints
 UCLASS()
-class OGGASSET_API USoundProcessingLibrary : public UBlueprintFunctionLibrary {
+class SOUNDVORBIS_API UVorbisFunctionLibrary : public UBlueprintFunctionLibrary {
 
 	GENERATED_BODY()
 
 	//
-	// USoundProcessingLibrary implementation
+	// UVorbisFunctionLibrary implementation
 	//
 
 	/// Loads a vanilla .ogg vorbis audio stream from a file on disk
@@ -52,7 +54,7 @@ class OGGASSET_API USoundProcessingLibrary : public UBlueprintFunctionLibrary {
 	//
 	// Internal implementation
 	//
-	
+/*	
 	/// Loads an audio stream from the in-memory contents of an .ogg vorbis file
 	/// @param  rawFile  File contents of the .ogg vorbis file
 	/// @returns The SoundWave instance for the loaded audio stream
@@ -73,7 +75,7 @@ class OGGASSET_API USoundProcessingLibrary : public UBlueprintFunctionLibrary {
 
 	// Function to Start a new DecompressTask
 	protected: static void InitNewDecompressTask(USoundWave *inSoundWave);
-
+*/
 };
 
 // --------------------------------------------------------------------------------------------- //

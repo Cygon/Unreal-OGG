@@ -2,6 +2,7 @@
 /*
 OggAsset Library
 Copyright (C) 2017-2018 Scott Bishel
+Enhancements copyright (C) 2020 Markus Ewald
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +24,16 @@ THE SOFTWARE.
 */
 #pragma endregion // MIT License
 
-#include "SoundProcessingLibrary.h"
-#include "OggAssetErrors.h"
-#include "OggAsset.h"
+#include "VorbisFunctionLibrary.h"
+#include "SoundVorbisErrors.h"
+
+// TODO: Dummy method until USoundVorbis done.
+USoundWave *UVorbisFunctionLibrary::LoadOggFile(const FString &path) {
+  return nullptr;
+}
+
+/*
+//#include "OggAsset.h"
 
 #include <Sound/SoundWave.h>
 #include <AudioDevice.h>
@@ -34,7 +42,7 @@ THE SOFTWARE.
 
 // --------------------------------------------------------------------------------------------- //
 
-USoundWave *USoundProcessingLibrary::LoadOggFile(const FString &path) {
+USoundWave *UVorbisFunctionLibrary::LoadOggFile(const FString &path) {
 
   // Try to load the whole file into memory. If it can't be accessed or doesn't exist,
   // complain and return NULL (since Unreal Engine has no proper error handling)
@@ -45,7 +53,7 @@ USoundWave *USoundProcessingLibrary::LoadOggFile(const FString &path) {
       UE_LOG(
         LogOggAsset, Error,
         TEXT("%s - %s %s"),
-        TEXT("USoundProcessingLibrary::LoadOggFile()"),
+        TEXT("UVorbisFunctionLibrary::LoadOggFile()"),
         TEXT("Could not load file at "),
         *path
       );
@@ -54,13 +62,13 @@ USoundWave *USoundProcessingLibrary::LoadOggFile(const FString &path) {
   }
 
   // We were able to load the file, now try to decode it as Ogg Vorbis container
-  return USoundProcessingLibrary::LoadData(fileContents);
+  return UVorbisFunctionLibrary::LoadData(fileContents);
 
 }
 
 // --------------------------------------------------------------------------------------------- //
 
-USoundWave *USoundProcessingLibrary::LoadData(const TArray<uint8> &fileContents) {
+USoundWave *UVorbisFunctionLibrary::LoadData(const TArray<uint8> &fileContents) {
 
   // Sanity check for the input data array -- if it's empty, it can't be valid
   SIZE_T fileLength = fileContents.Num();
@@ -68,7 +76,7 @@ USoundWave *USoundProcessingLibrary::LoadData(const TArray<uint8> &fileContents)
     UE_LOG(
       LogOggAsset, Error,
       TEXT("%s - %s"),
-      TEXT("USoundProcessingLibrary::LoadData()"),
+      TEXT("UVorbisFunctionLibrary::LoadData()"),
       TEXT("Raw file input array is empty. Sound not loaded/assigned?")
     );
     return nullptr;
@@ -80,7 +88,7 @@ USoundWave *USoundProcessingLibrary::LoadData(const TArray<uint8> &fileContents)
     UE_LOG(
       LogOggAsset, Error,
       TEXT("%s - %s"),
-      TEXT("USoundProcessingLibrary::LoadData()"),
+      TEXT("UVorbisFunctionLibrary::LoadData()"),
       TEXT("Failed to create a new SoundWave object!")
     );
     return nullptr;
@@ -92,7 +100,7 @@ USoundWave *USoundProcessingLibrary::LoadData(const TArray<uint8> &fileContents)
     UE_LOG(
       LogOggAsset, Error,
       TEXT("%s - %s"),
-      TEXT("USoundProcessingLibrary::LoadData()"),
+      TEXT("UVorbisFunctionLibrary::LoadData()"),
       TEXT("Could not read compressed vorbis audio stream. Asset corrupted?")
     );
     return nullptr;
@@ -115,7 +123,7 @@ USoundWave *USoundProcessingLibrary::LoadData(const TArray<uint8> &fileContents)
 
 // --------------------------------------------------------------------------------------------- //
 
-void USoundProcessingLibrary::LoadSoundWave(
+void UVorbisFunctionLibrary::LoadSoundWave(
   USoundWave *compressedSoundWave, const TArray<uint8> &rawFile
 ) {
 
@@ -124,7 +132,7 @@ void USoundProcessingLibrary::LoadSoundWave(
     UE_LOG(
       LogOggAsset, Error,
       TEXT("%s - %s"),
-      TEXT("USoundProcessingLibrary::LoadSoundWave()"),
+      TEXT("UVorbisFunctionLibrary::LoadSoundWave()"),
       TEXT("Compressed sound wave instance was null")
     );
     return;
@@ -135,7 +143,7 @@ void USoundProcessingLibrary::LoadSoundWave(
     UE_LOG(
       LogOggAsset, Error,
       TEXT("%s - %s"),
-      TEXT("USoundProcessingLibrary::LoadSoundWave()"),
+      TEXT("UVorbisFunctionLibrary::LoadSoundWave()"),
       TEXT("Raw file input array is empty. Sound not loaded/assigned?")
     );
     return;
@@ -145,7 +153,7 @@ void USoundProcessingLibrary::LoadSoundWave(
     UE_LOG(
       LogOggAsset, Error,
       TEXT("%s - %s"),
-      TEXT("USoundProcessingLibrary::LoadSoundWave()"),
+      TEXT("UVorbisFunctionLibrary::LoadSoundWave()"),
       TEXT("Could not read compressed vorbis audio stream. Asset corrupted?")
     );
     return;
@@ -166,7 +174,7 @@ void USoundProcessingLibrary::LoadSoundWave(
 
 // --------------------------------------------------------------------------------------------- //
 
-bool USoundProcessingLibrary::FillSoundWaveInfo(
+bool UVorbisFunctionLibrary::FillSoundWaveInfo(
   USoundWave *inSoundWave, const TArray<uint8> &inRawFile
 ) {
 
@@ -192,12 +200,12 @@ bool USoundProcessingLibrary::FillSoundWaveInfo(
 
 // --------------------------------------------------------------------------------------------- //
 
-void USoundProcessingLibrary::GetPCMDataFromFile(USoundWave *inSoundWave) {
+void UVorbisFunctionLibrary::GetPCMDataFromFile(USoundWave *inSoundWave) {
   if(inSoundWave == nullptr)	{
     UE_LOG(
       LogOggAsset, Error,
       TEXT("%s - %s"),
-      TEXT("USoundProcessingLibrary::GetPCMDataFromFile()"),
+      TEXT("UVorbisFunctionLibrary::GetPCMDataFromFile()"),
       TEXT("Passed sound wave is null")
     );
     return;
@@ -211,7 +219,7 @@ void USoundProcessingLibrary::GetPCMDataFromFile(USoundWave *inSoundWave) {
     UE_LOG(
       LogOggAsset, Error,
       TEXT("%s - %s"),
-      TEXT("USoundProcessingLibrary::GetPCMDataFromFile()"),
+      TEXT("UVorbisFunctionLibrary::GetPCMDataFromFile()"),
       TEXT("Wrong number of channels. SoundWave instance must either be mono or stereo")
     );
     return;
@@ -233,7 +241,7 @@ void USoundProcessingLibrary::GetPCMDataFromFile(USoundWave *inSoundWave) {
       UE_LOG(
         LogOggAsset, Error,
         TEXT("%s - %s"),
-        TEXT("USoundProcessingLibrary::GetPCMDataFromFile()"),
+        TEXT("UVorbisFunctionLibrary::GetPCMDataFromFile()"),
         TEXT("Could not access the engine's main audio device")
       );
       return;
@@ -243,7 +251,7 @@ void USoundProcessingLibrary::GetPCMDataFromFile(USoundWave *inSoundWave) {
 
 // --------------------------------------------------------------------------------------------- //
 
-void USoundProcessingLibrary::InitNewDecompressTask(USoundWave *InSoundWaveRef) {
+void UVorbisFunctionLibrary::InitNewDecompressTask(USoundWave *InSoundWaveRef) {
   // Do we already have a valid Runnable? If not, create a new one
   if(FAudioDecompressWorker::Runnable == NULL) {
     // Init new Worker and pass the SoundWaveRef to decompress it
@@ -258,10 +266,11 @@ void USoundProcessingLibrary::InitNewDecompressTask(USoundWave *InSoundWaveRef) 
     UE_LOG(
       LogOggAsset, Display,
       TEXT("%s - %s"),
-      TEXT("USoundProcessingLibrary::InitNewDecompressTask()"),
+      TEXT("UVorbisFunctionLibrary::InitNewDecompressTask()"),
       TEXT("Previous decompress task was not finished yet")
     );
   }
 }
 
 // --------------------------------------------------------------------------------------------- //
+*/

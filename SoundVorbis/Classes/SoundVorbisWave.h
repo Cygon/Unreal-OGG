@@ -2,7 +2,7 @@
 /*
 OggAsset Library
 Copyright (C) 2017-2018 Scott Bishel
-With enhancements copyright (C) 2020 Markus Ewald
+Enhancements copyright (C) 2020 Markus Ewald
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
