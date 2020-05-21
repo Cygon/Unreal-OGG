@@ -29,18 +29,18 @@ THE SOFTWARE.
 
 // --------------------------------------------------------------------------------------------- //
 
-/// Manages global data of the OggAsset module when loaded into Unreal Engine
-class FOggAssetModule : public IModuleInterface {
+/// Manages global data of the SoundVorbis module when loaded into Unreal Engine
+class FSoundVorbisModule : public IModuleInterface {
 
   //
   // IModuleInterface implementation
   //
 
   /// Called when the module is loaded into Unreal Engine
-  public: virtual void StartupModule() override { }
+  public: virtual void StartupModule() override {}
 
   /// Called before the module is unloaded by Unreal Engine
-  public: virtual void ShutdownModule() override { }
+  public: virtual void ShutdownModule() override {}
 
   /// Reports the the module can be unloaded and reloaded without quitting the engine
   public: virtual bool SupportsDynamicReloading() override {
@@ -51,6 +51,6 @@ class FOggAssetModule : public IModuleInterface {
 
 // --------------------------------------------------------------------------------------------- //
 
-IMPLEMENT_MODULE(FOggAssetModule, OggAsset);
+IMPLEMENT_MODULE(FSoundVorbisModule, SoundVorbis);
 
 // --------------------------------------------------------------------------------------------- //
