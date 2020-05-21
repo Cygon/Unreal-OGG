@@ -43,6 +43,8 @@ public class SoundVorbisImporter : ModuleRules {
       }
     );
 
+    PublicDefinitions.Add("WITH_OGGVORBIS");
+
     // Uncomment if you are using Slate UI
     // PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 

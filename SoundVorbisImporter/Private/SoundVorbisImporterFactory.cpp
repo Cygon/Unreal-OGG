@@ -26,7 +26,15 @@ THE SOFTWARE.
 
 #include "SoundVorbisImporterFactory.h"
 
-//#include "../OggAsset/Public/SoundProcessingLibrary.h"
+#include <SoundVorbisErrors.h>
+
+#include <Runtime/Engine/Public/VorbisAudioInfo.h>
+#include <Developer/TargetPlatform/Public/Interfaces/IAudioFormat.h>
+
+// --------------------------------------------------------------------------------------------- //
+
+// Barf. Holy shit Epic. I'm not sure if I should even copy & paste crap like this...
+static bool bSoundVorbisFactorySuppressImportOverwriteDialog = false;
 
 // --------------------------------------------------------------------------------------------- //
 
@@ -59,10 +67,86 @@ UObject *USoundVorbisImporterFactory::FactoryCreateBinary(
 	const uint8 *bufferEnd,
 	FFeedbackContext *warn
 ) {
-	return nullptr;
-	/*
+
 	// If the sound already exists, look it up so we can reuse the import settings
 	USoundVorbis *existingSound = FindObject<USoundVorbis>(inParent, *name.ToString());
+
+#if defined(THIS_COPY_PASTED_CODE_WOULD_DO_ANYTHING)
+	// TODO: This needs to be sent to the audio device and wait on stopping the sounds
+	TArray<UAudioComponent *> componentsToRestart;
+	FAudioDeviceManager *audioDeviceManager = GEngine->GetAudioDeviceManager();
+	if((audioDeviceManager != nullptr) && (existingSound != nullptr)) {
+		// TODO: Generalize the stop sounds function
+		//AudioDeviceManager->StopSoundsForReimport(ExistingSound, ComponentsToRestart);
+	}
+#endif
+
+	bool bUseExistingSettings = bSoundVorbisFactorySuppressImportOverwriteDialog;
+
+	// Bad software design 101: if your importer doesn't just import but suddenly needs
+	// to take a drive with your UI library and invite the user for a talk, you'll only
+	// end up with even more specialty code to make that mess testable again (oh, and
+	// you've locked yourself out of 100% test coverage, too!)
+	if((existingSound != nullptr) && !bUseExistingSettings && !GIsAutomationTesting)	{
+		DisplayOverwriteOptionsDialog(
+			FText::Format(
+				NSLOCTEXT(
+					"SoundVorbisImporterFactory", "ImportOverwriteWarning",
+					"You are about to import '{0}' over an existing sound."
+				),
+				FText::FromName(name)
+			)
+		);
+
+		switch(OverwriteYesOrNoToAllState) {
+			case EAppReturnType::Yes:
+			case EAppReturnType::YesAll: {
+				bUseExistingSettings = false;
+				break;
+			}
+			case EAppReturnType::No:
+			case EAppReturnType::NoAll: {
+				bUseExistingSettings = true;
+				break;
+			}
+			default: {
+				GEditor->GetEditorSubsystem<UImportSubsystem>()->BroadcastAssetPostImport(this, nullptr);
+				return nullptr;
+			}
+		}
+	}
+
+	// Reset the flag back to false so subsequent imports are not suppressed unless
+	// the code explicitly suppresses it
+	bSoundVorbisFactorySuppressImportOverwriteDialog = false;
+
+  // Make an unneccessary copy of the asset's data.
+  // Seen like this in Epic's mod importer. I don't know why the buffer isn't good enough,
+	// maybe they were scared the XMP library modified its input buffer?
+	TArray<uint8> rawVorbisData;
+	rawVorbisData.Empty(bufferEnd - buffer);
+	rawVorbisData.AddUninitialized(bufferEnd - buffer);
+	FMemory::Memcpy(rawVorbisData.GetData(), buffer, rawVorbisData.Num());
+
+	FSoundQualityInfo soundQualityInfo;
+	FVorbisAudioInfo audioInfo;
+	bool wasVorbisFile = audioInfo.ReadCompressedInfo(
+		rawVorbisData.GetData(), rawVorbisData.Num(), &soundQualityInfo
+	);
+	if(!wasVorbisFile) {
+    UE_LOG(
+      LogTemp, Error,
+      TEXT("%s - %s"),
+      TEXT("USoundVorbisImporterFactory::FactoryCreateBinary()"),
+      TEXT("Imported file was not in OGG Vorbis audio format")
+    );
+		return nullptr;
+	}
+	
+	//audioInfo.
+
+  /*
+
 
 	UOggAsset *oggAsset = nullptr;
 	TArray<uint8> data;
@@ -76,4 +160,6 @@ UObject *USoundVorbisImporterFactory::FactoryCreateBinary(
 
 	return OggAsset;
 	*/
+
+	return nullptr;
 }
