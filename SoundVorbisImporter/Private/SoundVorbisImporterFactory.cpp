@@ -77,7 +77,7 @@ UObject *USoundVorbisImporterFactory::FactoryCreateBinary(
 	FAudioDeviceManager *audioDeviceManager = GEngine->GetAudioDeviceManager();
 	if((audioDeviceManager != nullptr) && (existingSound != nullptr)) {
 		// TODO: Generalize the stop sounds function
-		//AudioDeviceManager->StopSoundsForReimport(ExistingSound, ComponentsToRestart);
+		audioDeviceManager->StopSoundsForReimport(ExistingSound, ComponentsToRestart);
 	}
 #endif
 
@@ -128,6 +128,7 @@ UObject *USoundVorbisImporterFactory::FactoryCreateBinary(
 	rawVorbisData.AddUninitialized(bufferEnd - buffer);
 	FMemory::Memcpy(rawVorbisData.GetData(), buffer, rawVorbisData.Num());
 
+	// Check if this is a valid OGG Vorbis audio file
 	FSoundQualityInfo soundQualityInfo;
 	FVorbisAudioInfo audioInfo;
 	bool wasVorbisFile = audioInfo.ReadCompressedInfo(
@@ -142,24 +143,40 @@ UObject *USoundVorbisImporterFactory::FactoryCreateBinary(
     );
 		return nullptr;
 	}
-	
-	//audioInfo.
 
-  /*
-
-
-	UOggAsset *oggAsset = nullptr;
-	TArray<uint8> data;
-
-	if (FFileHelper::LoadFileToArray(data, *CurrentFilename))
-	{
-		OggAsset = NewObject<UOggAsset>(InParent, Name, Flags);
-		USoundProcessingLibrary::LoadSoundWave(OggAsset, data);
-		OggAsset->Data = data;
+	// Use pre-existing sound if it exists and we want to keep settings,
+	// otherwise create new sound and import raw data.
+	USoundVorbis *sound;
+	if(bUseExistingSettings && (existingSound != nullptr)) {
+	  sound = existingSound;
+	} else {
+		sound = NewObject<USoundVorbis>(inParent, name, flags);
 	}
 
-	return OggAsset;
-	*/
+	sound->Duration = soundQualityInfo.Duration;
 
-	return nullptr;
+	// After all the effort, just copy the OGG Vorbis file, whole, into the audio asset...
+	sound->RawData.Lock(LOCK_READ_WRITE);
+	void *lockedData = sound->RawData.Realloc(bufferEnd - buffer);
+	FMemory::Memcpy(lockedData, buffer, bufferEnd - buffer);
+	sound->RawData.Unlock();
+
+	// Send out notifications because why shouldn't this responsibility be part
+	// of the the asset importer who needs to be tightly coupled to the whole engine :-()
+	GEditor->GetEditorSubsystem<UImportSubsystem>()->BroadcastAssetPostImport(this, sound);
+#if defined(THIS_COPY_PASTED_CODE_WOULD_DO_ANYTHING)
+	for(int32 componentIndex = 0; componentIndex < componentsToRestart.Num(); ++componentIndex) {
+		componentsToRestart[componentIndex]->Play();
+	}
+#endif
+
+	UE_LOG(
+		LogTemp, Display,
+		TEXT("%s - %s %f"),
+		TEXT("USoundVorbisImporterFactory::FactoryCreateBinary()"),
+		TEXT("OGG Vorbis audio file imported with length in seconds:"),
+		soundQualityInfo.Duration
+	);
+
+	return sound;
 }
